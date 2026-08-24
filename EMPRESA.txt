@@ -1,0 +1,5 @@
+RFC-EMPRESA   NOMBRE-EMPRESA                  FCH-UP    SALARIO  
+NTD120101AB1  NTTDATA                         14082026  18000.00 
+DOM130215CD2  DOMINION                        14082026  22000.00 
+MUB140320EF3  MUBEA                           14082026  20500.00 
+NEO150410GH4  NEORIS                          14082026  23000.00 
