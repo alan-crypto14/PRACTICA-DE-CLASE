@@ -26,18 +26,13 @@
                ORGANIZATION IS LINE SEQUENTIAL
                ACCESS MODE IS SEQUENTIAL.
 
+         *>Cambie solo seccion de empresas, en vez de leer de registro en registro ahora lo lee de forma dinamica por una llave que en este caso sera el rfc
            SELECT EMPRESAS ASSIGN TO DISK
-           "..\EMPRESA.txt"
-           ORGANIZATION IS LINE SEQUENTIAL
-           ACCESS MODE IS SEQUENTIAL.
-
-           SELECT EMPRESA-TEMP ASSIGN TO DISK
-           "..\EMPRESA_TEMP.txt".
-
-           SELECT EMPRESAS-ORD ASSIGN TO DISK
-           "..\EMPRESA_ORD.txt"
-           ORGANIZATION IS LINE SEQUENTIAL
-           ACCESS MODE IS SEQUENTIAL.
+           "..\EMPRESA.DAT"
+           ORGANIZATION IS INDEXED
+           ACCESS MODE IS DYNAMIC
+           RECORD KEY IS RFC-EMPRESA
+           FILE STATUS IS WS-FILE-STATUS.
 
            SELECT RELACION ASSIGN TO DISK
            "..\RELACION.txt"
@@ -226,10 +221,10 @@
 
        01 WS-FIN-EMPLEADOS         PIC X VALUE 'N'.
        01 WS-FIN-EMPRESAS          PIC X VALUE 'N'.
-
        01 WS-INDICE                PIC 9(02) VALUE 1.
-
        01 WS-CONTADOR              PIC 9(03) VALUE 0.
+       *>Agregue un filestatus para que muestre que si las operaciones del indexado funcionan
+       01 WS-FILE-STATUS           PIC XX.
 
 
        01 TABLA-EMPLEADOS.
@@ -255,6 +250,9 @@
            ON ASCENDING KEY TMP-RFC
            INPUT PROCEDURE IS CARGAR-EMPLEADOS
            GIVING EMPLEADOS-ORD
+           PERFORM CARGAR-TABLA-EMPLEADOS
+           DISPLAY "EMPLEADOS RELACIONADOS CARGADOS."
+           PERFORM CREAR-RELACION
 
            SORT EMPRESA-TEMP
            ON ASCENDING KEY TMP-RFC-EMPRESA
@@ -289,7 +287,6 @@
 
            MOVE 'N' TO WS-FIN-EMPLEADOS
 
-           *> SALTAR ENCABEZADO
            READ EMPLEADOS
                AT END
                    MOVE 'S' TO WS-FIN-EMPLEADOS
@@ -332,7 +329,6 @@
 
            MOVE 'N' TO WS-FIN-EMPRESAS
 
-           *> SALTAR ENCABEZADO
            READ EMPRESAS
                AT END
                    MOVE 'S' TO WS-FIN-EMPRESAS
@@ -406,34 +402,70 @@
            CLOSE EMPLEADOS-ORD.
 
 
-       CREAR-RELACION.
 
-           OPEN INPUT EMPRESAS-ORD
+       CREAR-RELACION.
+       *>Crear relacion se modifica para poder buscar por rfc cada empresa, igualmente, se leia de forma secuencial
+           OPEN I-O EMPRESAS
+
            OUTPUT RELACION
 
-           MOVE 'N' TO WS-FIN-EMPRESAS
+           MOVE "NTD120101AB1" TO RFC-EMPRESA
 
-           PERFORM UNTIL WS-FIN-EMPRESAS = 'S'
+           READ EMPRESAS
+           KEY IS RFC-EMPRESA
 
-           READ EMPRESAS-ORD
+           INVALID KEY
+           DISPLAY "NTTDATA NO ENCONTRADA"
 
-           AT END
-           MOVE 'S'
-           TO WS-FIN-EMPRESAS
-
-           NOT AT END
-
+           NOT INVALID KEY
            PERFORM RELACION-NTTDATA
-           PERFORM RELACION-DOMINION
-           PERFORM RELACION-MUBEA
-           PERFORM RELACION-NEORIS
 
            END-READ
 
-           END-PERFORM
 
-           CLOSE EMPRESAS-ORD
-                 RELACION.
+           MOVE "DOM130215CD2" TO RFC-EMPRESA
+
+           READ EMPRESAS
+           KEY IS RFC-EMPRESA
+
+        INVALID KEY
+            DISPLAY "DOMINION NO ENCONTRADA"
+
+        NOT INVALID KEY
+            PERFORM RELACION-DOMINION
+
+           END-READ
+
+
+           MOVE "MUB140320EF3" TO RFC-EMPRESA
+
+           READ EMPRESAS
+           KEY IS RFC-EMPRESA
+
+           INVALID KEY
+           DISPLAY "MUBEA NO ENCONTRADA"
+
+           NOT INVALID KEY
+           PERFORM RELACION-MUBEA
+
+           END-READ
+
+
+           MOVE "NEO150410GH4" TO RFC-EMPRESA
+
+           READ EMPRESAS
+           KEY IS RFC-EMPRESA
+
+           INVALID KEY
+           DISPLAY "NEORIS NO ENCONTRADA"
+
+           NOT INVALID KEY
+            PERFORM RELACION-NEORIS
+
+           END-READ
+
+           CLOSE EMPRESAS
+           RELACION.
 
 
        RELACION-NTTDATA.
