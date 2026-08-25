@@ -171,7 +171,7 @@
            05 FILLER               PIC X(02).
            05 ORD-REL-SALARIO      PIC X(09).
 
-
+            *>cambios realizados por Suazo<*
        FD REPORTE.
 
        01 REG-REPORTE.
@@ -179,22 +179,27 @@
            05 FILLER               PIC X(02).
            05 REP-RFC-EMPRESA      PIC X(12).
            05 FILLER               PIC X(02).
-           05 REP-RFC-EMPLEADO     PIC X(13).
-           05 FILLER               PIC X(02).
-           05 REP-NOMBRE           PIC X(20).
-           05 FILLER               PIC X(02).
-           05 REP-APATERNO         PIC X(20).
-           05 FILLER               PIC X(02).
-           05 REP-AMATERNO         PIC X(20).
-           05 FILLER               PIC X(02).
-           05 REP-SALARIO          PIC X(09).
-
+           05 REP-EMPLEADO         PIC X(70).
 
        WORKING-STORAGE SECTION.
+       01 WS-BANDERAS.
+           05 WS-FIN-EMPLEADOS          PIC X VALUE 'N'.
+           05 WS-FIN-EMPRESA-TXT        PIC X VALUE 'N'.
+           05 WS-FIN-REPORTE            PIC X VALUE 'N'.
+           05 WS-FIN-LECTURA            PIC X VALUE 'N'.
+           05 WS-PRIMER-REGISTRO        PIC X VALUE 'S'.
+           05 WS-PRIMER-EMPLEADO        PIC X VALUE 'S'.
 
-       01 WS-FIN-EMPLEADOS         PIC X VALUE 'N'.
-       01 WS-FIN-EMPRESA-TXT       PIC X VALUE 'N'.
-       01 WS-FIN-REPORTE           PIC X VALUE 'N'.
+       01 WS-FORMATO.
+           05 WS-EMPRESA-ACTUAL        PIC X(30).
+           05 WS-RFC-EMPRESA-ACTUAL    PIC X(12).
+
+       01 WS-EMPLEADO-TEMP.
+           05 WS-RFC-EMPLEADO       PIC X(13).
+           05 WS-SEPARADOR          PIC X(03).
+           05 WS-NOMBRE-EMPLEADO    PIC X(20).
+           05 WS-APATERNO-EMPLEADO  PIC X(20).
+
        01 WS-INDICE                PIC 9(02) VALUE 1.
        01 WS-CONTADOR              PIC 9(03) VALUE 0.
        01 WS-FILE-STATUS           PIC XX.
@@ -591,57 +596,69 @@
 
            ADD 1 TO WS-CONTADOR.
 
-
+           *>MODIFICACIONES PARA EL REPORTE>*
        CREAR-REPORTE.
 
            OPEN INPUT RELACION-ORD
                 OUTPUT REPORTE
 
-           MOVE SPACES TO REG-REPORTE
+           MOVE 'N' TO WS-FIN-LECTURA
+           MOVE 'S' TO WS-PRIMER-REGISTRO
+           MOVE 'S' TO WS-PRIMER-EMPLEADO
 
-           MOVE "EMPRESA" TO REP-EMPRESA
-           MOVE "RFC-EMPRESA" TO REP-RFC-EMPRESA
-           MOVE "RFC-EMPLEADO" TO REP-RFC-EMPLEADO
-           MOVE "NOMBRE" TO REP-NOMBRE
-           MOVE "APATERNO" TO REP-APATERNO
-           MOVE "AMATERNO" TO REP-AMATERNO
-           MOVE "SALARIO" TO REP-SALARIO
-
-           WRITE REG-REPORTE
-
-           MOVE 'N' TO WS-FIN-REPORTE
-
-           PERFORM UNTIL WS-FIN-REPORTE = 'S'
+           PERFORM UNTIL WS-FIN-LECTURA = 'S'
 
                READ RELACION-ORD
 
                    AT END
-                       MOVE 'S' TO WS-FIN-REPORTE
+
+                       MOVE 'S'
+                           TO WS-FIN-LECTURA
 
                    NOT AT END
 
-                       MOVE ORD-REL-EMPRESA
-                           TO REP-EMPRESA
+                       IF WS-PRIMER-REGISTRO = 'S'
 
-                       MOVE ORD-REL-RFC-EMPRESA
-                           TO REP-RFC-EMPRESA
+                           MOVE ORD-REL-EMPRESA
+                               TO WS-EMPRESA-ACTUAL
 
-                       MOVE ORD-REL-RFC-EMPLEADO
-                           TO REP-RFC-EMPLEADO
+                           MOVE ORD-REL-RFC-EMPRESA
+                               TO WS-RFC-EMPRESA-ACTUAL
 
-                       MOVE ORD-REL-NOMBRE
-                           TO REP-NOMBRE
+                           MOVE 'N'
+                               TO WS-PRIMER-REGISTRO
 
-                       MOVE ORD-REL-APATERNO
-                           TO REP-APATERNO
+                           MOVE 'S'
+                               TO WS-PRIMER-EMPLEADO
 
-                       MOVE ORD-REL-AMATERNO
-                           TO REP-AMATERNO
+                           PERFORM ESCRIBIR-EMPLEADO
 
-                       MOVE ORD-REL-SALARIO
-                           TO REP-SALARIO
+                       ELSE
 
-                       WRITE REG-REPORTE
+                           IF ORD-REL-EMPRESA =
+                              WS-EMPRESA-ACTUAL
+
+                               MOVE 'N'
+                                   TO WS-PRIMER-EMPLEADO
+
+                               PERFORM ESCRIBIR-EMPLEADO
+
+                           ELSE
+
+                               MOVE ORD-REL-EMPRESA
+                                   TO WS-EMPRESA-ACTUAL
+
+                               MOVE ORD-REL-RFC-EMPRESA
+                                   TO WS-RFC-EMPRESA-ACTUAL
+
+                               MOVE 'S'
+                                   TO WS-PRIMER-EMPLEADO
+
+                               PERFORM ESCRIBIR-EMPLEADO
+
+                           END-IF
+
+                       END-IF
 
                END-READ
 
@@ -649,3 +666,31 @@
 
            CLOSE RELACION-ORD
                  REPORTE.
+
+           ESCRIBIR-EMPLEADO.
+
+           MOVE SPACES TO REG-REPORTE
+
+           IF WS-PRIMER-EMPLEADO = 'S'
+
+               MOVE WS-EMPRESA-ACTUAL
+                   TO REP-EMPRESA
+
+               MOVE WS-RFC-EMPRESA-ACTUAL
+                   TO REP-RFC-EMPRESA
+
+           END-IF
+
+           STRING
+               ORD-REL-RFC-EMPLEADO
+               " - "
+               ORD-REL-NOMBRE
+               " "
+               ORD-REL-APATERNO
+               " "
+               ORD-REL-AMATERNO
+               DELIMITED BY SIZE
+               INTO REP-EMPLEADO
+           END-STRING
+
+           WRITE REG-REPORTE.
