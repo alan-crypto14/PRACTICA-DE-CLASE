@@ -2,6 +2,7 @@ EMPRESA                         RFC-EMPRESA   RFC-EMPLEADO   NOMBRE             
 DOMINION                        DOM130215CD2  GARC850315AB1  CARLOS                GARCIA                MARTINEZ              22000.00
 DOMINION                        DOM130215CD2  HEGA870923IJ5  HECTOR                HERNANDEZ             GARCIA                22000.00
 DOMINION                        DOM130215CD2  ROSA920105GH4  SOFIA                 RAMIREZ               SANCHEZ               22000.00
+DOMINION                        DOM130215CD2  VEMA950617KL6  VERONICA              VELAZQUEZ             MARTINEZ              22000.00
 MUBEA                           MUB140320EF3  HEGA870923IJ5  HECTOR                HERNANDEZ             GARCIA                20500.00
 MUBEA                           MUB140320EF3  LOPR900721CD2  LUIS                  LOPEZ                 PEREZ                 20500.00
 MUBEA                           MUB140320EF3  MAMJ880412EF3  MIGUEL                MARTINEZ              MORENO                20500.00
@@ -10,6 +11,7 @@ NEORIS                          NEO150410GH4  CRLA930225OP8  ALEJANDRA          
 NEORIS                          NEO150410GH4  MAMJ880412EF3  MIGUEL                MARTINEZ              MORENO                23000.00
 NEORIS                          NEO150410GH4  ROSA920105GH4  SOFIA                 RAMIREZ               SANCHEZ               23000.00
 NEORIS                          NEO150410GH4  TORJ890830MN7  JORGE                 TORRES                RAMOS                 23000.00
+NEORIS                          NEO150410GH4  VEMA950617KL6  VERONICA              VELAZQUEZ             MARTINEZ              23000.00
 NTTDATA                         NTD120101AB1  CRLA930225OP8  ALEJANDRA             CRUZ                  LOPEZ                 18000.00
 NTTDATA                         NTD120101AB1  GARC850315AB1  CARLOS                GARCIA                MARTINEZ              18000.00
 NTTDATA                         NTD120101AB1  LOPR900721CD2  LUIS                  LOPEZ                 PEREZ                 18000.00
